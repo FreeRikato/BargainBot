@@ -9,7 +9,6 @@ from langgraph.graph import StateGraph
 from langgraph.graph.message import add_messages
 from langgraph.prebuilt import ToolNode, tools_condition
 from langgraph.checkpoint.sqlite import SqliteSaver
-import sqlite3
 
 # Load environment variables from the .env file
 load_dotenv()
@@ -49,40 +48,10 @@ graph_builder.add_conditional_edges(
 graph_builder.add_edge("tools", "chatbot")
 graph_builder.set_entry_point("chatbot")
 
-
-class SqliteSaverManager:
-    def __init__(self, conn_string):
-        self.conn_string = conn_string
-        self.saver = None
-
-    def __enter__(self):
-        self.saver = SqliteSaver.from_conn_string(self.conn_string)
-        return self
-
-    def __exit__(self, exc_type, exc_val, exc_tb):
-        if self.saver:
-            self.saver.close()
-
-    def flush_memory(self):
-        db_path = self.saver.db_file
-        with sqlite3.connect(db_path) as conn:
-            cursor = conn.cursor()
-            cursor.execute("DELETE FROM checkpoints")
-            conn.commit()
-        print("Memory flushed.")
-
-    def get_saver(self):
-        return self.saver
-
-
-# Use SqliteSaverManager with a context manager
-with SqliteSaverManager("../logs/chat_history.db") as memory_manager:
+# Use SqliteSaver with a context manager
+with SqliteSaver.from_conn_string("../logs/chat_history.db") as memory:
     # Compile the graph with SQLite memory saver
-    graph = graph_builder.compile(checkpointer=memory_manager.get_saver())
-    try:
-        display(Image(graph.get_graph().draw_mermaid_png()))
-    except Exception:
-        pass
+    graph = graph_builder.compile(checkpointer=memory)
 
     # Function to stream graph updates
     def stream_graph_updates(user_input: str, thread_id="default"):
@@ -98,15 +67,11 @@ with SqliteSaverManager("../logs/chat_history.db") as memory_manager:
             if user_input.lower() in ["quit", "exit", "q"]:
                 print("Goodbye!")
                 break
-            elif user_input.lower() == "flush memory":
-                memory_manager.flush_memory()
-                continue
 
             stream_graph_updates(user_input)
-        except Exception as e:
-            print(f"An error occurred: {e}")
+        except:
+            # Fallback if input() is not available
+            user_input = "What do you know about LangGraph?"
+            print("User: " + user_input)
+            stream_graph_updates(user_input)
             break
-
-    # Flush memory at the end of the conversation
-    memory_manager.flush_memory()
-    print("Memory flushed at the end of the conversation.")
