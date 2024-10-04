@@ -1,0 +1,10 @@
+langgraph
+langsmith
+langchain_groq
+python-dotenv
+typing-extensions
+duckduckgo-search==5.3.1b1
+langchain-community
+langgraph-checkpoint-sqlite
+langchain-experimental
+langchain-ollama

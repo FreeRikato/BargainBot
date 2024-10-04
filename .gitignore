@@ -1,0 +1,5 @@
+.venv
+.BargainBot
+.env
+logs/chat_history.db
+__pycache__
