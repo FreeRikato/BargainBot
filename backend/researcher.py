@@ -160,17 +160,17 @@ workflow.set_entry_point("generate_questions")
 # Compile
 graph = workflow.compile()
 
-inputs = {
-    "product": "Nothing Phone 2A",
-    "region": "India",
-    "target_market": "Tech-savvy consumers aged 18-35",
-    "competitors": "Apple, Samsung, Xiaomi",
-    "pricing_strategy": "Value-based pricing",
-    "context": "The product is a new smartphone model with advanced camera features and long battery life.",
-}
+# inputs = {
+#     "product": "Nothing Phone 2A",
+#     "region": "India",
+#     "target_market": "1",
+#     "competitors": "1",
+#     "pricing_strategy": "1",
+#     "context": "1",
+# }
 
-for event in graph.stream(inputs, stream_mode="values"):
-    research = event
-    print(event)
+# for event in graph.stream(inputs, stream_mode="values"):
+#     research = event
+#     print(event)
 
-print(research["research_result"])
+# print(research["research_result"])

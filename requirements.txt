@@ -8,3 +8,4 @@ langchain-community
 langgraph-checkpoint-sqlite
 langchain-experimental
 langchain-ollama
+altair==4
