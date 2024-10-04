@@ -9,6 +9,7 @@ from langgraph.graph import StateGraph
 from langgraph.graph.message import add_messages
 from langgraph.prebuilt import ToolNode, tools_condition
 from langgraph.checkpoint.sqlite import SqliteSaver
+from prompts import negotiater_prompt
 
 # Load environment variables from the .env file
 load_dotenv()
@@ -19,6 +20,7 @@ groq_api_key = os.getenv("GROQ_API_KEY")
 
 class State(TypedDict):
     messages: Annotated[list, add_messages]
+    research_result: str
 
 
 # Build the graph
@@ -29,10 +31,14 @@ tool = DuckDuckGoSearchResults(max_results=10)
 tools = [tool]
 llm = ChatGroq(model="llama-3.1-70b-versatile")
 llm_with_tools = llm.bind_tools(tools)
+llm_with_tools_chain = negotiater_prompt | llm_with_tools
 
 
 def chatbot(state: State):
-    return {"messages": [llm_with_tools.invoke(state["messages"])]}
+
+    return {
+        "messages": [llm_with_tools_chain.invoke({"user_message": state["messages"]})]
+    }
 
 
 graph_builder.add_node("chatbot", chatbot)
@@ -49,7 +55,7 @@ graph_builder.add_edge("tools", "chatbot")
 graph_builder.set_entry_point("chatbot")
 
 # Use SqliteSaver with a context manager
-with SqliteSaver.from_conn_string("../logs/chat_history.db") as memory:
+with SqliteSaver.from_conn_string("../logs/chat.db") as memory:
     # Compile the graph with SQLite memory saver
     graph = graph_builder.compile(checkpointer=memory)
 
@@ -64,14 +70,27 @@ with SqliteSaver.from_conn_string("../logs/chat_history.db") as memory:
     while True:
         try:
             user_input = input("User: ")
-            if user_input.lower() in ["quit", "exit", "q"]:
-                print("Goodbye!")
+            exit_keywords = [
+                "quit",
+                "exit",
+                "q",
+                "accept",
+                "i accept",
+                "reject",
+                "i reject",
+                "i reject the offer",
+                "i accept the offer",
+                "offer accepted",
+                "offer rejected",
+            ]
+            if user_input.lower() in exit_keywords:
+                print("Thanks!")
                 break
 
             stream_graph_updates(user_input)
         except:
             # Fallback if input() is not available
-            user_input = "What do you know about LangGraph?"
+            user_input = "End the negoiation with Accept or Reject"
             print("User: " + user_input)
             stream_graph_updates(user_input)
             break
