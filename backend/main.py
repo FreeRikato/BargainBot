@@ -1,21 +1,3 @@
-from researcher import graph
-from fastapi import FastAPI
-from fastapi.responses import StreamingResponse
-import json
-
-app = FastAPI()
-
-
-@app.get("/")
-def read_root():
-    return {"Hello": "World"}
-
-
-@app.get("/items/{item_id}")
-def read_item(item_id: int, q: str = None):
-    return {"item_id": item_id, "q": q}
-
-
 from fastapi import FastAPI, Request
 from fastapi.responses import StreamingResponse
 from researcher import graph
@@ -23,6 +5,11 @@ import json
 import asyncio
 
 app = FastAPI()
+
+
+@app.get("/")
+def read_root():
+    return {"Hello": "World"}
 
 
 @app.post("/research")

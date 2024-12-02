@@ -72,7 +72,7 @@ He can use below stop words to end the negotiation:
 "quit","exit","q","accept","i accept","reject","i reject","i reject the offer","i accept the offer","offer accepted" or "offer rejected"
 
 User_message: {user_message}
-Price range: 25000 to 30000
+Price range: 25000 to 30000 rupees
 """,
     input_variables=["user_message"],
 )

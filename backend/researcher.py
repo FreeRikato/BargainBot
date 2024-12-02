@@ -1,4 +1,5 @@
 import os
+import time
 from dotenv import load_dotenv
 import json
 from langchain_community.tools import DuckDuckGoSearchResults, DuckDuckGoSearchRun
@@ -16,7 +17,7 @@ from prompts import reflector_prompt, json_transformer_prompt, reform_researcher
 load_dotenv()
 
 # Access the environment variable
-groq_api_key = os.getenv("GROQ_API_KEY")
+# groq_api_key = os.getenv("GROQ_API_KEY")
 
 # Quesion Reflector
 reflector_llm = ChatGroq(model="llama-3.1-70b-versatile", temperature=0)
@@ -46,7 +47,9 @@ tool = DuckDuckGoSearchRun(num_results=10, safesearch="off")
 
 
 def reform_research(question, results):
-    reform_researcher_llm = ChatGroq(model="llama-3.2-90b-text-preview", temperature=1)
+    reform_researcher_llm = ChatGroq(
+        model="llama-3.2-90b-vision-preview", temperature=1
+    )
 
     reform_researcher_output_parser = StrOutputParser()
 
@@ -68,7 +71,7 @@ def search_insights(questions: dict):
         question_no += 1
         if question_no == 3:
             break
-        # time.sleep(10)
+        time.sleep(15)
         results = tool.invoke(question)
         reformed_results = reform_research(question, results)
         research_result += (
@@ -169,8 +172,6 @@ graph = workflow.compile()
 #     "context": "1",
 # }
 
-# for event in graph.stream(inputs, stream_mode="values"):
+# for event in graph.stream(inputs):
 #     research = event
 #     print(event)
-
-# print(research["research_result"])
